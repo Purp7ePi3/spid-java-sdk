@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - SPID Demo</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 80px auto;
+      padding: 0 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    .card {
+      background: #f5f5f5;
+      padding: 24px;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .label {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .value {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .badge {
+      background: #06c;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+    }
+
+    .btn-logout {
+      background: #c00;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+      text-decoration: none;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Benvenuto!</h1>
+  <span class="badge" th:text="${user.spidLevel}">LEVEL_2</span>
+
+  <div class="card">
+    <div class="field">
+      <div class="label">Nome completo</div>
+      <div class="value" th:text="${user.fullName}">Mario Rossi</div>
+    </div>
+    <div class="field">
+      <div class="label">Codice fiscale</div>
+      <div class="value" th:text="${user.fiscalNumber}">RSSMRA80A01H501U</div>
+    </div>
+    <div class="field">
+      <div class="label">Email</div>
+      <div class="value" th:text="${user.email}">mario@esempio.it</div>
+    </div>
+    <div class="field">
+      <div class="label">Identity Provider</div>
+      <div class="value" th:text="${user.idpEntityId}">https://idp.test.it</div>
+    </div>
+  </div>
+
+  <a href="/spid/logout" class="btn-logout">Esci</a>
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+{
+  "groups": [
+    {
+      "name": "spid",
+      "type": "it.spid.spring.config.SpidProperties",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spid.assertion-consumer-service-url",
+      "type": "java.lang.String",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    },
+    {
+      "name": "spid.certificate-path",
+      "type": "java.lang.String",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    },
+    {
+      "name": "spid.entity-id",
+      "type": "java.lang.String",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    },
+    {
+      "name": "spid.minimum-level",
+      "type": "it.spid.core.model.SpidLevel",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    },
+    {
+      "name": "spid.private-key-path",
+      "type": "java.lang.String",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    },
+    {
+      "name": "spid.sign-requests",
+      "type": "java.lang.Boolean",
+      "sourceType": "it.spid.spring.config.SpidProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "spid.single-logout-service-url",
+      "type": "java.lang.String",
+      "sourceType": "it.spid.spring.config.SpidProperties"
+    }
+  ],
+  "hints": []
+}

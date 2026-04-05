@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spid:
+  entity-id: https://localhost:8080
+  assertion-consumer-service-url: http://localhost:8080/spid/acs
+  single-logout-service-url: http://localhost:8080/spid/logout
+  minimum-level: LEVEL_2
+  sign-requests: false
+  certificate-path: classpath:spid/cert.pem
+  private-key-path: classpath:spid/key.pem
+
+spring:
+  thymeleaf:
+    cache: false
