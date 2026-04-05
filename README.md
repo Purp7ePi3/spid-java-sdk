@@ -116,8 +116,3 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 ## Licenza
 
 Apache License 2.0
-
-## Supporto
-
-Stai usando questa SDK? Scrivici a **sdk@tuodominio.it** —  
-offriamo supporto gratuito per i primi 10 progetti.
