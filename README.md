@@ -23,6 +23,7 @@ spid:
   assertion-consumer-service-url: https://tuaapp.it/spid/acs
   single-logout-service-url: https://tuaapp.it/spid/logout
   minimum-level: LEVEL_2
+  sign-requests: true
   certificate-path: classpath:spid/cert.pem
   private-key-path: classpath:spid/key.pem
 ```
@@ -109,7 +110,7 @@ l'URL del tuo metadata (es. `https://tuaapp.it/spid/metadata`).
 | `spid-core` | SAML 2.0, AuthnRequest, Response parsing, Single Logout |
 | `spid-crypto` | Firma digitale XML, certificati (PKCS#1 e PKCS#8) |
 | `spid-metadata` | Generazione SP metadata XML, lista IdP AgID |
-| `spid-validator` | Validazione risposta IdP, replay attack prevention |
+| `spid-validator` | Validazione risposta IdP, firma obbligatoria, replay attack prevention |
 | `spid-spring` | Autoconfiguration Spring Boot, controller REST |
 | `spid-example-app` | App demo funzionante |
 
@@ -126,19 +127,19 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 - [x] Firma digitale XML (PKCS#1 e PKCS#8)
 - [x] Generazione SP metadata (con SLO e KeyDescriptor encryption)
 - [x] Validazione SAMLResponse completa (firma, audience, scadenza, InResponseTo)
+- [x] Firma AuthnRequest con RSA-SHA256 (`sign-requests: true`)
+- [x] Validazione firma IdP obbligatoria sulla SAMLResponse
 - [x] Replay attack prevention (`RequestIdStore`)
 - [x] Single Logout SAML 2.0 (`LogoutRequest` + `LogoutResponse`)
 - [x] Spring Boot Autoconfiguration (`AutoConfiguration.imports`)
 - [x] Lista IdP ufficiali AgID con cache 24h e auto-refresh
 - [x] Endpoint REST IdP (`/spid/idps`, `/spid/idps/search`, `/spid/idps/refresh`)
 - [x] Test unitari per tutti i moduli
-- [x] **Firma AuthnRequest** — abilitare e testare `sign-requests: true` con firma RSA-SHA256
+
 ---
 
 ## 📋 TODO
 
-
-- [ ] **Validazione firma IdP** — verificare la firma XML della SAMLResponse con il certificato IdP reale
 - [ ] **Widget selezione IdP** — pagina HTML/JS con loghi ufficiali SPID e bottone "Entra con SPID"
 - [ ] **Supporto multi-IdP dinamico** — switch IdP senza restart dell'app
 - [ ] **Sessioni distribuite** — supporto Redis per deployment in cluster
