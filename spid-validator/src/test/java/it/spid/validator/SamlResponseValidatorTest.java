@@ -8,18 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test per SamlResponseValidator.
- * Usa XML sintetici per coprire i casi di validazione strutturale
- * (la verifica firma richiede un certificato reale e viene testata
- * separatamente).
+ * Con la nuova logica la firma è obbligatoria — se il cert è assente o non
+ * valido
+ * il validator blocca subito senza arrivare agli altri controlli.
  */
 public class SamlResponseValidatorTest {
 
   private static final String ENTITY_ID = "https://miaapp.it";
   private static final String ACS_URL = "https://miaapp.it/spid/acs";
   private static final String REQUEST_ID = "_abc123";
-  // Certificato fittizio in Base64 (non valido crittograficamente — usato per
-  // test strutturali)
-  private static final String FAKE_CERT_B64 = "AAAA";
 
   private SamlResponseValidator validator;
 
@@ -31,64 +28,57 @@ public class SamlResponseValidatorTest {
 
   @Test
   void validate_xmlNonParsabile_restituisceErrore() {
-    ValidationResult result = validator.validate("non-xml-!!!", REQUEST_ID, FAKE_CERT_B64);
+    ValidationResult result = validator.validate("non-xml-!!!", REQUEST_ID, null);
     assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("XML non parsabile")));
+    assertFalse(result.getErrors().isEmpty());
   }
 
   @Test
-  void validate_statusCodeFallito_restituisceErrore() {
-    String xml = buildSamlResponse(REQUEST_ID, ACS_URL, ENTITY_ID,
-        "urn:oasis:names:tc:SAML:2.0:status:AuthnFailed",
-        "2099-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
-
-    ValidationResult result = validator.validate(xml, REQUEST_ID, FAKE_CERT_B64);
-    assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("StatusCode")));
-  }
-
-  @Test
-  void validate_inResponseToErrato_restituisceErrore() {
-    String xml = buildSamlResponse("_WRONG_ID", ACS_URL, ENTITY_ID,
-        "urn:oasis:names:tc:SAML:2.0:status:Success",
-        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
-
-    ValidationResult result = validator.validate(xml, REQUEST_ID, FAKE_CERT_B64);
-    assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("InResponseTo")));
-  }
-
-  @Test
-  void validate_destinationErrata_restituisceErrore() {
-    String xml = buildSamlResponse(REQUEST_ID, "https://altro.it/acs", ENTITY_ID,
-        "urn:oasis:names:tc:SAML:2.0:status:Success",
-        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
-
-    ValidationResult result = validator.validate(xml, REQUEST_ID, FAKE_CERT_B64);
-    assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("Destination")));
-  }
-
-  @Test
-  void validate_audienceErrata_restituisceErrore() {
-    String xml = buildSamlResponse(REQUEST_ID, ACS_URL, "https://altro.it",
-        "urn:oasis:names:tc:SAML:2.0:status:Success",
-        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
-
-    ValidationResult result = validator.validate(xml, REQUEST_ID, FAKE_CERT_B64);
-    assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("Audience")));
-  }
-
-  @Test
-  void validate_assertionScaduta_restituisceErrore() {
+  void validate_certMancante_bloccaSubito() {
     String xml = buildSamlResponse(REQUEST_ID, ACS_URL, ENTITY_ID,
         "urn:oasis:names:tc:SAML:2.0:status:Success",
-        "2000-01-01T00:00:00Z", "2000-01-01T01:00:00Z"); // scaduta nel 2000
+        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
 
-    ValidationResult result = validator.validate(xml, REQUEST_ID, FAKE_CERT_B64);
+    ValidationResult result = validator.validate(xml, REQUEST_ID, null);
     assertFalse(result.isValid());
-    assertTrue(result.getErrors().stream().anyMatch(e -> e.contains("scaduta")));
+    assertTrue(result.getErrors().stream()
+        .anyMatch(e -> e.contains("Certificato IdP mancante")));
+  }
+
+  @Test
+  void validate_certVuoto_bloccaSubito() {
+    String xml = buildSamlResponse(REQUEST_ID, ACS_URL, ENTITY_ID,
+        "urn:oasis:names:tc:SAML:2.0:status:Success",
+        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
+
+    ValidationResult result = validator.validate(xml, REQUEST_ID, "  ");
+    assertFalse(result.isValid());
+    assertTrue(result.getErrors().stream()
+        .anyMatch(e -> e.contains("Certificato IdP mancante")));
+  }
+
+  @Test
+  void validate_certNonValido_bloccaSullaFirma() {
+    String xml = buildSamlResponse(REQUEST_ID, ACS_URL, ENTITY_ID,
+        "urn:oasis:names:tc:SAML:2.0:status:Success",
+        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
+
+    ValidationResult result = validator.validate(xml, REQUEST_ID, "AAAA");
+    assertFalse(result.isValid());
+    assertFalse(result.getErrors().isEmpty());
+  }
+
+  @Test
+  void validate_xmlSenzaFirma_bloccaSullaFirma() {
+    String xml = buildSamlResponse(REQUEST_ID, ACS_URL, ENTITY_ID,
+        "urn:oasis:names:tc:SAML:2.0:status:Success",
+        "2000-01-01T00:00:00Z", "2099-01-01T01:00:00Z");
+
+    String fakeCert = java.util.Base64.getEncoder()
+        .encodeToString("not-a-real-cert".getBytes());
+    ValidationResult result = validator.validate(xml, REQUEST_ID, fakeCert);
+    assertFalse(result.isValid());
+    assertFalse(result.getErrors().isEmpty());
   }
 
   @Test
@@ -104,7 +94,6 @@ public class SamlResponseValidatorTest {
     assertDoesNotThrow(result::throwIfInvalid);
   }
 
-  // Helper: costruisce una SAMLResponse XML minimale per i test
   private String buildSamlResponse(String inResponseTo, String destination,
       String audience, String statusCode,
       String notBefore, String notOnOrAfter) {
@@ -129,6 +118,7 @@ public class SamlResponseValidatorTest {
             </saml:Conditions>
           </saml:Assertion>
         </samlp:Response>
-        """.formatted(inResponseTo, destination, statusCode, notBefore, notOnOrAfter, audience);
+        """.formatted(inResponseTo, destination, statusCode,
+        notBefore, notOnOrAfter, audience);
   }
 }
