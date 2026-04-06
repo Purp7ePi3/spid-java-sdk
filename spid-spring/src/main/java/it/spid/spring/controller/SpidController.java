@@ -53,11 +53,11 @@ public class SpidController {
    * @param idpSloUrl URL Single Logout dell'IdP (opzionale, per abilitare SLO)
    */
   @GetMapping("/login")
-  public void login(@RequestParam String idpEntityId,
-      @RequestParam String idpSsoUrl,
-      @RequestParam String idpCertB64,
-      @RequestParam(required = false) String idpSloUrl,
-      @RequestParam(defaultValue = "LEVEL_2") SpidLevel level,
+  public void login(@RequestParam("idpEntityId") String idpEntityId,
+      @RequestParam("idpSsoUrl") String idpSsoUrl,
+      @RequestParam("idpCertB64") String idpCertB64,
+      @RequestParam(name = "idpSloUrl", required = false) String idpSloUrl,
+      @RequestParam(name = "level", defaultValue = "LEVEL_2") SpidLevel level,
       HttpSession session,
       HttpServletResponse response) throws Exception {
 
