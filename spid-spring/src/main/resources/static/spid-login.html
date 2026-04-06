@@ -67,7 +67,6 @@
       }
     }
 
-    /* Header */
     .card-header {
       padding: 32px 32px 20px;
     }
@@ -143,7 +142,6 @@
       color: var(--muted);
     }
 
-    /* Search */
     .search-wrap {
       padding: 0 32px 16px;
     }
@@ -173,16 +171,14 @@
       color: var(--muted);
     }
 
-    /* Divider */
     .divider {
       height: 1px;
       background: var(--border);
       margin: 0 32px;
     }
 
-    /* IdP list */
     .idp-list {
-      max-height: 340px;
+      max-height: 360px;
       overflow-y: auto;
     }
 
@@ -203,7 +199,7 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      padding: 13px 32px;
+      padding: 12px 32px;
       cursor: pointer;
       text-decoration: none;
       border-bottom: 1px solid var(--border);
@@ -218,9 +214,29 @@
       background: var(--item-hover);
     }
 
+    .idp-logo-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      padding: 4px;
+    }
+
+    .idp-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
     .idp-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
       background: var(--secondary);
       border: 1px solid var(--border);
@@ -257,7 +273,6 @@
       stroke: var(--primary);
     }
 
-    /* States */
     .state {
       padding: 40px 32px;
       text-align: center;
@@ -288,7 +303,6 @@
       color: #ef4444;
     }
 
-    /* Footer */
     .card-footer {
       border-top: 1px solid var(--border);
       padding: 14px 32px;
@@ -338,7 +352,6 @@
 <body>
 
   <div class="card">
-    <!-- Header -->
     <div class="card-header">
       <div class="card-top">
         <div class="brand">
@@ -368,14 +381,12 @@
       <p>Seleziona con quale gestore vuoi accedere</p>
     </div>
 
-    <!-- Search -->
     <div class="search-wrap">
       <input type="text" id="searchInput" placeholder="Cerca il tuo gestore..." oninput="filterIdps(this.value)">
     </div>
 
     <div class="divider"></div>
 
-    <!-- List -->
     <div class="idp-list" id="idpList">
       <div class="state">
         <div class="spinner"></div>
@@ -383,7 +394,6 @@
       </div>
     </div>
 
-    <!-- Footer -->
     <div class="card-footer">
       <p>Powered by <strong>SPID Java SDK</strong></p>
       <a href="/spid/metadata">Metadata SP →</a>
@@ -391,7 +401,6 @@
   </div>
 
   <script>
-    // Ripristina tema
     const saved = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', saved);
 
@@ -405,6 +414,34 @@
     const params = new URLSearchParams(window.location.search);
     const level = params.get('level') || 'LEVEL_2';
     let allIdps = [];
+
+    // Mappa entityId → logo ufficiale AgID (raw GitHub)
+    const LOGOS = {
+      'https://loginspid.aruba.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-arubaid.svg',
+      'https://identity.infocert.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-infocertid.svg',
+      'https://idp.intesigroup.com':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-intesaid.svg',
+      'https://id.lepida.it/idp/shibboleth':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-lepidaid.svg',
+      'https://idp.namirialtsp.com/idp':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-namirialid.svg',
+      'https://posteid.poste.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-posteid.svg',
+      'https://spid.register.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-registerid.svg',
+      'https://identity.sieltecloud.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-sielteid.svg',
+      'https://spid.teamsystem.com/idp':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-teamsystemid.svg',
+      'https://login.id.tim.it/affwebservices/public/saml2sso':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-timid.svg',
+      'https://loginspid.infocamere.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-infocamereid.svg',
+      'https://id.eht.eu':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-ehtid.svg',
+    };
 
     async function loadIdps() {
       try {
@@ -428,16 +465,23 @@
         list.innerHTML = '<div class="state"><p>Nessun Identity Provider trovato.</p></div>';
         return;
       }
-      list.innerHTML = idps.map(idp => `
-      <a class="idp-item" href="/spid/login-select?idpEntityId=${encodeURIComponent(idp.entityId)}&level=${level}">
-        <div class="idp-avatar">${initials(idp.name)}</div>
-        <span class="idp-name">${idp.name}</span>
-        <svg class="idp-arrow" viewBox="0 0 24 24">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </a>
-    `).join('');
+      list.innerHTML = idps.map(idp => {
+        const logoUrl = LOGOS[idp.entityId];
+        const logoHtml = logoUrl
+          ? `<div class="idp-logo-wrap"><img src="${logoUrl}" alt="${idp.name}" onerror="this.parentElement.outerHTML='<div class=\\'idp-avatar\\'>${initials(idp.name)}</div>'"></div>`
+          : `<div class="idp-avatar">${initials(idp.name)}</div>`;
+
+        return `
+        <a class="idp-item" href="/spid/login-select?idpEntityId=${encodeURIComponent(idp.entityId)}&level=${level}">
+          ${logoHtml}
+          <span class="idp-name">${idp.name}</span>
+          <svg class="idp-arrow" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      `;
+      }).join('');
     }
 
     function filterIdps(q) {
