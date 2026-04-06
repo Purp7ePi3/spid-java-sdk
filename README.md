@@ -34,11 +34,14 @@ Gli endpoint SPID sono disponibili automaticamente:
 
 | Endpoint | Descrizione |
 |----------|-------------|
-| `GET /spid/login` | Avvia il login verso un IdP |
+| `GET /spid/login-widget` | Pagina selezione IdP con lista ufficiale AgID |
+| `GET /spid/login-select` | Avvia login verso IdP scelto (con cert automatico) |
+| `GET /spid/login` | Avvia login verso un IdP (parametri manuali) |
 | `POST /spid/acs` | Riceve la risposta dall'IdP |
 | `GET /spid/logout` | Avvia Single Logout verso l'IdP |
 | `GET /spid/slo` | Riceve la LogoutResponse dall'IdP |
 | `GET /spid/user` | Dati utente in JSON |
+| `GET /spid/metadata` | Metadata SP firmato (conforme AgID) |
 | `GET /spid/idps` | Lista IdP ufficiali AgID |
 | `GET /spid/idps/search?q=aruba` | Cerca IdP per nome |
 | `POST /spid/idps/refresh` | Forza refresh lista IdP |
@@ -86,6 +89,7 @@ public String metadata() throws Exception {
     SpidConfig config = SpidConfig.builder()
             .entityId("https://tuaapp.it")
             .assertionConsumerServiceUrl("https://tuaapp.it/spid/acs")
+            .singleLogoutServiceUrl("https://tuaapp.it/spid/logout")
             .build();
 
     X509Certificate cert = CertificateLoader.loadCertificate(
@@ -95,11 +99,21 @@ public String metadata() throws Exception {
     return SpMetadataGenerator.create(config)
             .withCertificate(cert)
             .withOrganization("Nome Azienda", "https://tuaapp.it")
+            .withContactEmail("info@tuaapp.it")
+            .asPublic(true)
+            .withSigner(xmlSigner)  // firma il metadata
             .build();
 }
 ```
 
-**3. Registra il metadata su AgID:**  
+**3. Valida il metadata:**
+```bash
+pip install spid-sp-test
+sudo apt install xmlsec1
+spid_sp_test --metadata-url https://tuaapp.it/spid/metadata
+```
+
+**4. Registra il metadata su AgID:**  
 Vai su [https://registry.spid.gov.it](https://registry.spid.gov.it) e registra 
 l'URL del tuo metadata (es. `https://tuaapp.it/spid/metadata`).
 
@@ -109,15 +123,26 @@ l'URL del tuo metadata (es. `https://tuaapp.it/spid/metadata`).
 |--------|-------------|
 | `spid-core` | SAML 2.0, AuthnRequest, Response parsing, Single Logout |
 | `spid-crypto` | Firma digitale XML, certificati (PKCS#1 e PKCS#8) |
-| `spid-metadata` | Generazione SP metadata XML, lista IdP AgID |
+| `spid-metadata` | Generazione SP metadata XML conforme AgID, lista IdP |
 | `spid-validator` | Validazione risposta IdP, firma obbligatoria, replay attack prevention |
-| `spid-spring` | Autoconfiguration Spring Boot, controller REST |
+| `spid-spring` | Autoconfiguration Spring Boot, controller REST, widget IdP |
 | `spid-example-app` | App demo funzionante |
 
 ## Test in locale
 
-Puoi testare con l'ambiente demo SPID ufficiale:
-[https://demo.spid.gov.it](https://demo.spid.gov.it)
+Valida il metadata con lo strumento ufficiale AgID:
+```bash
+~/.local/bin/spid_sp_test --metadata-url http://localhost:8080/spid/metadata
+```
+
+Per testare il flusso completo serve un dominio con HTTPS — vedi la sezione **Per andare in produzione**.
+
+## Per andare in produzione
+
+1. **Dominio reale** — es. `tuaapp.it`
+2. **HTTPS** — certificato SSL (Let's Encrypt è gratuito)
+3. **Certificato SPID-compliant** — emesso da una CA accreditata AgID
+4. **Registrazione su AgID** — submit metadata su `registry.spid.gov.it`
 
 ---
 
@@ -125,7 +150,8 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 
 - [x] SAML 2.0 AuthnRequest e Response parsing
 - [x] Firma digitale XML (PKCS#1 e PKCS#8)
-- [x] Generazione SP metadata (con SLO e KeyDescriptor encryption)
+- [x] Generazione SP metadata conforme AgID (AttributeConsumingService, ContactPerson, firma)
+- [x] Validazione metadata con spid-sp-test (87/87 test passano)
 - [x] Validazione SAMLResponse completa (firma, audience, scadenza, InResponseTo)
 - [x] Firma AuthnRequest con RSA-SHA256 (`sign-requests: true`)
 - [x] Validazione firma IdP obbligatoria sulla SAMLResponse
@@ -133,6 +159,7 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 - [x] Single Logout SAML 2.0 (`LogoutRequest` + `LogoutResponse`)
 - [x] Spring Boot Autoconfiguration (`AutoConfiguration.imports`)
 - [x] Lista IdP ufficiali AgID con cache 24h e auto-refresh
+- [x] Widget selezione IdP con dark mode, ricerca e design moderno
 - [x] Endpoint REST IdP (`/spid/idps`, `/spid/idps/search`, `/spid/idps/refresh`)
 - [x] Test unitari per tutti i moduli
 
@@ -140,10 +167,8 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 
 ## 📋 TODO
 
-- [ ] **Widget selezione IdP** — pagina HTML/JS con loghi ufficiali SPID e bottone "Entra con SPID"
-- [ ] **Supporto multi-IdP dinamico** — switch IdP senza restart dell'app
 - [ ] **Sessioni distribuite** — supporto Redis per deployment in cluster
-- [ ] **Spring Boot Actuator** — endpoint `/actuator/spid` per monitoring e stato della cache IdP
+- [ ] **Spring Boot Actuator** — endpoint `/actuator/spid` per monitoring e stato cache IdP
 - [ ] **Pubblicazione Maven Central** — release pubblica con versioning semantico
 - [ ] **GitHub Actions CI/CD** — pipeline con test automatici su ogni PR
 
