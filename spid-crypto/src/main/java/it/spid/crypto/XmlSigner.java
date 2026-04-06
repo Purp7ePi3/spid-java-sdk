@@ -32,86 +32,83 @@ import java.util.List;
  */
 public class XmlSigner {
 
-    static {
-        if (Security.getProvider("BC") == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
+  static {
+    if (Security.getProvider("BC") == null) {
+      Security.addProvider(new BouncyCastleProvider());
     }
+  }
 
-    private final PrivateKey privateKey;
-    private final X509Certificate certificate;
-    private final XMLSignatureFactory sigFactory;
+  private final PrivateKey privateKey;
+  private final X509Certificate certificate;
+  private final XMLSignatureFactory sigFactory;
 
-    public XmlSigner(PrivateKey privateKey, X509Certificate certificate) {
-        this.privateKey = privateKey;
-        this.certificate = certificate;
-        this.sigFactory = XMLSignatureFactory.getInstance("DOM");
-    }
+  public XmlSigner(PrivateKey privateKey, X509Certificate certificate) {
+    this.privateKey = privateKey;
+    this.certificate = certificate;
+    this.sigFactory = XMLSignatureFactory.getInstance("DOM");
+  }
 
-    /**
-     * Firma un documento XML e restituisce l'XML firmato come stringa.
-     *
-     * @param xmlContent XML da firmare
-     * @param referenceId ID dell'elemento da firmare (es. l'ID della AuthnRequest)
-     */
-    public String sign(String xmlContent, String referenceId) throws Exception {
-        Document doc = parseXml(xmlContent);
-        signDocument(doc, referenceId);
-        return documentToString(doc);
-    }
+  /**
+   * Firma un documento XML e restituisce l'XML firmato come stringa.
+   *
+   * @param xmlContent  XML da firmare
+   * @param referenceId ID dell'elemento da firmare (es. l'ID della AuthnRequest)
+   */
+  public String sign(String xmlContent, String referenceId) throws Exception {
+    Document doc = parseXml(xmlContent);
+    signDocument(doc, referenceId);
+    return documentToString(doc);
+  }
 
-    private void signDocument(Document doc, String referenceId) throws Exception {
-        // Reference: punta all'elemento con l'ID della AuthnRequest
-        Reference ref = sigFactory.newReference(
-                "#" + referenceId,
-                sigFactory.newDigestMethod(DigestMethod.SHA256, null),
-                List.of(
-                        sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null),
-                        sigFactory.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null)
-                ),
-                null,
-                null
-        );
+  private void signDocument(Document doc, String referenceId) throws Exception {
+    // Reference: punta all'elemento con l'ID della AuthnRequest
+    Reference ref = sigFactory.newReference(
+        "#" + referenceId,
+        sigFactory.newDigestMethod(DigestMethod.SHA256, null),
+        List.of(
+            sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null),
+            sigFactory.newTransform(CanonicalizationMethod.EXCLUSIVE, (TransformParameterSpec) null)),
+        null,
+        null);
 
-        // SignedInfo: algoritmo RSA-SHA256 come richiesto da AgID
-        SignedInfo signedInfo = sigFactory.newSignedInfo(
-                sigFactory.newCanonicalizationMethod(
-                        CanonicalizationMethod.EXCLUSIVE,
-                        (C14NMethodParameterSpec) null
-                ),
-                sigFactory.newSignatureMethod("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", null),
-                Collections.singletonList(ref)
-        );
+    // SignedInfo: algoritmo RSA-SHA256 come richiesto da AgID
+    SignedInfo signedInfo = sigFactory.newSignedInfo(
+        sigFactory.newCanonicalizationMethod(
+            CanonicalizationMethod.EXCLUSIVE,
+            (C14NMethodParameterSpec) null),
+        sigFactory.newSignatureMethod("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256", null),
+        Collections.singletonList(ref));
 
-        // KeyInfo: include il certificato X.509
-        KeyInfo keyInfo = buildKeyInfo();
+    // KeyInfo: include il certificato X.509
+    KeyInfo keyInfo = buildKeyInfo();
 
-        // Firma: inserita come primo figlio del root element
-        XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyInfo);
-        Element root = doc.getDocumentElement();
-        DOMSignContext signContext = new DOMSignContext(privateKey, root, root.getFirstChild());
-        signature.sign(signContext);
-    }
+    // Firma: inserita come primo figlio del root element
+    XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyInfo);
+    Element root = doc.getDocumentElement();
+    root.setIdAttribute("ID", true);
+    DOMSignContext signContext = new DOMSignContext(privateKey, root, root.getFirstChild());
+    signature.sign(signContext);
+  }
 
-    private KeyInfo buildKeyInfo() throws Exception {
-        KeyInfoFactory kif = sigFactory.getKeyInfoFactory();
-        X509Data x509Data = kif.newX509Data(Collections.singletonList(certificate));
-        return kif.newKeyInfo(Collections.singletonList(x509Data));
-    }
+  private KeyInfo buildKeyInfo() throws Exception {
+    KeyInfoFactory kif = sigFactory.getKeyInfoFactory();
+    X509Data x509Data = kif.newX509Data(Collections.singletonList(certificate));
+    return kif.newKeyInfo(Collections.singletonList(x509Data));
+  }
 
-    private Document parseXml(String xml) throws Exception {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        return factory.newDocumentBuilder()
-                .parse(new java.io.ByteArrayInputStream(xml.getBytes()));
-    }
+  private Document parseXml(String xml) throws Exception {
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true);
+    factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+    return factory.newDocumentBuilder()
+        .parse(new java.io.ByteArrayInputStream(xml.getBytes()));
+  }
 
-    private String documentToString(Document doc) throws Exception {
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer transformer = tf.newTransformer();
-        StringWriter writer = new StringWriter();
-        transformer.transform(new DOMSource(doc), new StreamResult(writer));
-        return writer.toString();
-    }
+  private String documentToString(Document doc) throws Exception {
+    TransformerFactory tf = TransformerFactory.newInstance();
+    Transformer transformer = tf.newTransformer();
+    StringWriter writer = new StringWriter();
+    transformer.transform(new DOMSource(doc), new StreamResult(writer));
+    return writer.toString();
+  }
 }
