@@ -2,6 +2,7 @@ package it.spid.core.model;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -10,22 +11,19 @@ import java.util.Map;
  */
 public class SpidUser {
 
-  // Attributi minimi SPID
-  private String taxId; // codice fiscale
-  private String name; // nome
-  private String familyName; // cognome
+  private String taxId;
+  private String name;
+  private String familyName;
   private String email;
   private String dateOfBirth;
   private String placeOfBirth;
 
-  // Metadati sessione
   private String sessionIndex;
   private String nameId;
   private SpidLevel spidLevel;
   private String idpEntityId;
   private Instant authenticationTime;
 
-  // Tutti gli attributi raw dall'IdP
   private Map<String, String> attributes;
 
   private SpidUser() {
@@ -80,6 +78,12 @@ public class SpidUser {
   }
 
   public String getFullName() {
+    if (name == null && familyName == null)
+      return "";
+    if (name == null)
+      return familyName;
+    if (familyName == null)
+      return name;
     return name + " " + familyName;
   }
 
@@ -151,6 +155,11 @@ public class SpidUser {
     }
 
     public SpidUser build() {
+      // FIX: attributes non può essere null — evita NullPointerException in
+      // getAttributes()
+      if (user.attributes == null) {
+        user.attributes = new HashMap<>();
+      }
       return user;
     }
   }
