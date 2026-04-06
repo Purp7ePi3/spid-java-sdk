@@ -13,7 +13,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 public class IdpMetadataParser {
   private static final String MD_NS = "urn:oasis:names:tc:SAML:2.0:metadata";
-  private static final String DS_NS = "http://www.w3.org/2000/09/xmldsig#";
 
   private IdpMetadataParser() {
   }
@@ -37,17 +36,20 @@ public class IdpMetadataParser {
 
   private static String extractSsoUrl(Document doc) {
     NodeList nodes = doc.getElementsByTagNameNS(MD_NS, "SingleSignOnService");
+    // Preferisci HTTP-POST, poi HTTP-Redirect come fallback
+    String redirectUrl = null;
     for (int i = 0; i < nodes.getLength(); i++) {
       Element el = (Element) nodes.item(i);
-      if (el.getAttribute("Binding").contains("HTTP-POST")) {
-        return el.getAttribute("Locations");
+      String binding = el.getAttribute("Binding");
+      String location = el.getAttribute("Location"); // FIX: era "Locations"
+      if (binding.contains("HTTP-POST")) {
+        return location;
+      }
+      if (binding.contains("HTTP-Redirect")) {
+        redirectUrl = location;
       }
     }
-    // fallback redirect
-    if (nodes.getLength() > 0) {
-      return ((Element) nodes.item(0)).getAttribute("Location");
-    }
-    return null;
+    return redirectUrl; // fallback redirect
   }
 
   private static List<String> extractCerts(Document doc) {
@@ -61,12 +63,11 @@ public class IdpMetadataParser {
     return certs;
   }
 
-  public record IdpInfo(String entityId, String ssUrl,
-      List<String> certificatesBase64) {
+  public record IdpInfo(String entityId, String ssoUrl, List<String> certificatesBase64) {
 
     public String getPrimaryCertificateBase64() {
       if (certificatesBase64.isEmpty()) {
-        throw new IllegalStateException("Any certificate");
+        throw new IllegalStateException("Nessun certificato trovato nel metadata IdP");
       }
       return certificatesBase64.get(0);
     }
