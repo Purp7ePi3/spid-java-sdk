@@ -2,7 +2,9 @@ package it.spid.example;
 
 import it.spid.core.model.SpidConfig;
 import it.spid.crypto.CertificateLoader;
+import it.spid.crypto.XmlSigner;
 import it.spid.metadata.SpMetadataGenerator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,9 @@ import java.security.cert.X509Certificate;
 
 @RestController
 public class MetadataController {
+
+  @Autowired
+  private XmlSigner xmlSigner;
 
   @GetMapping(value = "/spid/metadata", produces = MediaType.APPLICATION_XML_VALUE)
   public String metadata() throws Exception {
@@ -28,6 +33,9 @@ public class MetadataController {
     return SpMetadataGenerator.create(config)
         .withCertificate(cert)
         .withOrganization("Test SP", "http://localhost:8080")
+        .withContactEmail("info@test-sp.it")
+        .asPublic(true)
+        .withSigner(xmlSigner)
         .build();
   }
 }
