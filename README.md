@@ -132,12 +132,12 @@ Puoi testare con l'ambiente demo SPID ufficiale:
 - [x] Lista IdP ufficiali AgID con cache 24h e auto-refresh
 - [x] Endpoint REST IdP (`/spid/idps`, `/spid/idps/search`, `/spid/idps/refresh`)
 - [x] Test unitari per tutti i moduli
-
+- [x] **Firma AuthnRequest** — abilitare e testare `sign-requests: true` con firma RSA-SHA256
 ---
 
 ## 📋 TODO
 
-- [ ] **Firma AuthnRequest** — abilitare e testare `sign-requests: true` con firma RSA-SHA256
+
 - [ ] **Validazione firma IdP** — verificare la firma XML della SAMLResponse con il certificato IdP reale
 - [ ] **Widget selezione IdP** — pagina HTML/JS con loghi ufficiali SPID e bottone "Entra con SPID"
 - [ ] **Supporto multi-IdP dinamico** — switch IdP senza restart dell'app
