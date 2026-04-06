@@ -3,11 +3,6 @@
 SDK Java per integrare **SPID** (Sistema Pubblico di Identità Digitale) 
 in applicazioni Spring Boot in pochi minuti.
 
-## Cos'è
-
-Integrare SPID da zero richiede settimane — protocolli SAML, certificati 
-digitali, XML firmati, specifiche AgID. Con questa SDK lo fai in un pomeriggio.
-
 ## Installazione
 
 Aggiungi la dipendenza nel tuo `pom.xml`:
@@ -40,8 +35,12 @@ Gli endpoint SPID sono disponibili automaticamente:
 |----------|-------------|
 | `GET /spid/login` | Avvia il login verso un IdP |
 | `POST /spid/acs` | Riceve la risposta dall'IdP |
-| `GET /spid/logout` | Logout |
+| `GET /spid/logout` | Avvia Single Logout verso l'IdP |
+| `GET /spid/slo` | Riceve la LogoutResponse dall'IdP |
 | `GET /spid/user` | Dati utente in JSON |
+| `GET /spid/idps` | Lista IdP ufficiali AgID |
+| `GET /spid/idps/search?q=aruba` | Cerca IdP per nome |
+| `POST /spid/idps/refresh` | Forza refresh lista IdP |
 
 Nel tuo controller:
 ```java
@@ -60,6 +59,12 @@ user.getName();          // "Mario"
 user.getFiscalNumber();  // "RSSMRA80A01H501U"
 user.getEmail();         // "mario@esempio.it"
 user.getSpidLevel();     // LEVEL_2
+
+// Lista IdP
+@Autowired
+private IdpRegistry idpRegistry;
+
+List<IdpInfo> idps = idpRegistry.getAll();
 ```
 
 ## Genera il tuo metadata SP
@@ -101,17 +106,47 @@ l'URL del tuo metadata (es. `https://tuaapp.it/spid/metadata`).
 
 | Modulo | Descrizione |
 |--------|-------------|
-| `spid-core` | SAML 2.0, AuthnRequest, Response parsing |
-| `spid-crypto` | Firma digitale XML, certificati |
-| `spid-metadata` | Generazione SP metadata XML |
-| `spid-validator` | Validazione risposta IdP |
-| `spid-spring` | Autoconfiguration Spring Boot |
+| `spid-core` | SAML 2.0, AuthnRequest, Response parsing, Single Logout |
+| `spid-crypto` | Firma digitale XML, certificati (PKCS#1 e PKCS#8) |
+| `spid-metadata` | Generazione SP metadata XML, lista IdP AgID |
+| `spid-validator` | Validazione risposta IdP, replay attack prevention |
+| `spid-spring` | Autoconfiguration Spring Boot, controller REST |
 | `spid-example-app` | App demo funzionante |
 
 ## Test in locale
 
 Puoi testare con l'ambiente demo SPID ufficiale:
 [https://demo.spid.gov.it](https://demo.spid.gov.it)
+
+---
+
+## ✅ Fatto
+
+- [x] SAML 2.0 AuthnRequest e Response parsing
+- [x] Firma digitale XML (PKCS#1 e PKCS#8)
+- [x] Generazione SP metadata (con SLO e KeyDescriptor encryption)
+- [x] Validazione SAMLResponse completa (firma, audience, scadenza, InResponseTo)
+- [x] Replay attack prevention (`RequestIdStore`)
+- [x] Single Logout SAML 2.0 (`LogoutRequest` + `LogoutResponse`)
+- [x] Spring Boot Autoconfiguration (`AutoConfiguration.imports`)
+- [x] Lista IdP ufficiali AgID con cache 24h e auto-refresh
+- [x] Endpoint REST IdP (`/spid/idps`, `/spid/idps/search`, `/spid/idps/refresh`)
+- [x] Test unitari per tutti i moduli
+
+---
+
+## 📋 TODO
+
+- [ ] **Firma AuthnRequest** — abilitare e testare `sign-requests: true` con firma RSA-SHA256
+- [ ] **Validazione firma IdP** — verificare la firma XML della SAMLResponse con il certificato IdP reale
+- [ ] **Widget selezione IdP** — pagina HTML/JS con loghi ufficiali SPID e bottone "Entra con SPID"
+- [ ] **Supporto multi-IdP dinamico** — switch IdP senza restart dell'app
+- [ ] **Sessioni distribuite** — supporto Redis per deployment in cluster
+- [ ] **Spring Boot Actuator** — endpoint `/actuator/spid` per monitoring e stato della cache IdP
+- [ ] **Pubblicazione Maven Central** — release pubblica con versioning semantico
+- [ ] **GitHub Actions CI/CD** — pipeline con test automatici su ogni PR
+
+---
 
 ## Licenza
 
