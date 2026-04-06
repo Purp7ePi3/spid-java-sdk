@@ -46,10 +46,14 @@ public class SpidAutoConfiguration {
         .build();
   }
 
+  /**
+   * SpidService con signer — se sign-requests: true il signer viene usato
+   * per firmare le AuthnRequest, altrimenti viene ignorato.
+   */
   @Bean
   @ConditionalOnMissingBean
-  public SpidService spidService(SpidConfig spidConfig) {
-    return new SpidService(spidConfig);
+  public SpidService spidService(SpidConfig spidConfig, XmlSigner xmlSigner) {
+    return new SpidService(spidConfig, xmlSigner);
   }
 
   @Bean
