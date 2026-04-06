@@ -3,6 +3,7 @@ package it.spid.core.saml;
 import it.spid.core.model.SpidConfig;
 import it.spid.core.model.SpidLevel;
 import it.spid.core.model.SpidUser;
+import it.spid.crypto.XmlSigner;
 
 /**
  * Facade principale della SDK SPID.
@@ -11,23 +12,33 @@ import it.spid.core.model.SpidUser;
 public class SpidService {
 
   private final SpidConfig config;
+  private final XmlSigner signer;
 
+  /**
+   * Costruttore senza firma — sign-requests: false.
+   */
   public SpidService(SpidConfig config) {
+    this(config, null);
+  }
+
+  /**
+   * Costruttore con firma — sign-requests: true.
+   * Il signer viene usato per firmare le AuthnRequest.
+   */
+  public SpidService(SpidConfig config, XmlSigner signer) {
     this.config = config;
+    this.signer = config.isSignRequests() ? signer : null;
   }
 
   /**
    * Avvia il flusso di login SPID.
-   *
-   * @param idpEntityId EntityID dell'IdP scelto
-   * @param idpSsoUrl   URL SSO dell'IdP
-   * @param level       Livello SPID richiesto
-   * @return LoginRequest con requestId e URL di redirect
+   * Se sign-requests: true, la AuthnRequest viene firmata digitalmente.
    */
   public LoginRequest initiateLogin(String idpEntityId, String idpSsoUrl, SpidLevel level) throws Exception {
     AuthnRequestBuilder builder = AuthnRequestBuilder.create(config)
         .forIdp(idpEntityId, idpSsoUrl)
-        .withLevel(level != null ? level : config.getMinimumSpidLevel());
+        .withLevel(level != null ? level : config.getMinimumSpidLevel())
+        .withSigner(signer);
 
     String redirectUrl = builder.buildRedirectUrl();
     String requestId = builder.getRequestId();
@@ -37,10 +48,6 @@ public class SpidService {
 
   /**
    * Processa la SAMLResponse ricevuta dall'IdP sull'ACS endpoint.
-   *
-   * @param samlResponseBase64 SAMLResponse in Base64
-   * @param expectedRequestId  ID della AuthnRequest originale
-   * @return SpidUser con i dati dell'utente autenticato
    */
   public SpidUser processResponse(String samlResponseBase64, String expectedRequestId) throws Exception {
     String xml = SamlEncoder.decodeBase64(samlResponseBase64);
@@ -49,10 +56,6 @@ public class SpidService {
 
   /**
    * Avvia il Single Logout SPID verso l'IdP.
-   *
-   * @param idpSloUrl URL SLO dell'IdP (dal suo metadata)
-   * @param user      Utente da disconnettere (serve nameId e sessionIndex)
-   * @return LogoutRequest con requestId e URL di redirect verso l'IdP
    */
   public LogoutRequest initiateSingleLogout(String idpSloUrl, SpidUser user) throws Exception {
     LogoutRequestBuilder builder = LogoutRequestBuilder.create(config)
@@ -66,18 +69,11 @@ public class SpidService {
 
   /**
    * Processa la LogoutResponse ricevuta dall'IdP.
-   *
-   * @param samlResponseBase64 LogoutResponse in Base64 (GET binding) o XML
-   *                           diretto
-   * @param expectedRequestId  ID della LogoutRequest originale
-   * @throws SecurityException se la risposta non è valida
    */
   public void processSingleLogoutResponse(String samlResponseBase64, String expectedRequestId) throws Exception {
     String xml = SamlEncoder.decodeBase64(samlResponseBase64);
     LogoutResponseParser.parse(xml, expectedRequestId);
   }
-
-  // --- Record di risultato ---
 
   public record LoginRequest(String requestId, String redirectUrl) {
   }
