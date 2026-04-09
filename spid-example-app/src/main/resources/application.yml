@@ -2,11 +2,11 @@ server:
   port: 8080
 
 spid:
-  entity-id: https://localhost:8080
-  assertion-consumer-service-url: http://localhost:8080/spid/acs
-  single-logout-service-url: http://localhost:8080/spid/logout
+  entity-id: http://spid-test.local:8080
+  assertion-consumer-service-url: http://spid-test.local:8080/spid/acs
+  single-logout-service-url: http://spid-test.local:8080/spid/logout
   minimum-level: LEVEL_2
-  sign-requests: false
+  sign-requests: true
   certificate-path: classpath:spid/cert.pem
   private-key-path: classpath:spid/key.pem
 

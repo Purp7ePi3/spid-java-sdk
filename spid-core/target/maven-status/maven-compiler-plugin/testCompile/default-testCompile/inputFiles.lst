@@ -1,3 +1,6 @@
+/home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/TestCertificateHelper.java
+/home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/SingleLogoutTest.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/SpidLevelTest.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/AuthnRequestBuilderTest.java
+/home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/AuthnRequestSignatureTest.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/test/java/it/spid/core/SamlEncoderTest.java

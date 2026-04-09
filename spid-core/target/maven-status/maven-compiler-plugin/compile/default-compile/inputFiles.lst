@@ -1,5 +1,7 @@
+/home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/saml/LogoutResponseParser.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/saml/SamlResponseParser.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/saml/SpidService.java
+/home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/saml/LogoutRequestBuilder.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/model/SpidLevel.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/model/SpidUser.java
 /home/simo/Desktop/spid-java-sdk/spid-core/src/main/java/it/spid/core/saml/AuthnRequestBuilder.java

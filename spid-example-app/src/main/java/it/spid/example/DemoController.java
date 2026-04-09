@@ -28,6 +28,6 @@ public class DemoController {
 
   @GetMapping("/spid/login-page")
   public String loginPage(Model model) {
-    return "redirect:/mock/login";
+    return "redirect:/spid/login-widget";
   }
 }

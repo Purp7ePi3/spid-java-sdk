@@ -1,0 +1,6 @@
+it/spid/core/SpidLevelTest.class
+it/spid/core/SingleLogoutTest.class
+it/spid/core/AuthnRequestSignatureTest.class
+it/spid/core/TestCertificateHelper.class
+it/spid/core/SamlEncoderTest.class
+it/spid/core/AuthnRequestBuilderTest.class

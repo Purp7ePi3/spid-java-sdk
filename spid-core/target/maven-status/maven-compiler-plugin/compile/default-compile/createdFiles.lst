@@ -1,0 +1,13 @@
+it/spid/core/saml/SpidService$LogoutRequest.class
+it/spid/core/saml/SpidService.class
+it/spid/core/saml/SamlEncoder.class
+it/spid/core/model/SpidUser.class
+it/spid/core/saml/AuthnRequestBuilder.class
+it/spid/core/model/SpidUser$Builder.class
+it/spid/core/saml/LogoutRequestBuilder.class
+it/spid/core/saml/LogoutResponseParser.class
+it/spid/core/model/SpidLevel.class
+it/spid/core/saml/SamlResponseParser.class
+it/spid/core/saml/SpidService$LoginRequest.class
+it/spid/core/model/SpidConfig.class
+it/spid/core/model/SpidConfig$Builder.class

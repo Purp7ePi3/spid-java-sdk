@@ -1,0 +1,3 @@
+it/spid/crypto/XmlSigner.class
+it/spid/crypto/CertificateLoader.class
+it/spid/crypto/XmlSignatureValidator.class

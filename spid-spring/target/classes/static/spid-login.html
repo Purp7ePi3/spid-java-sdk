@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accedi con SPID</title>
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --card: #ffffff;
+      --border: #e4e4e7;
+      --foreground: #09090b;
+      --muted: #71717a;
+      --primary: #0d47a1;
+      --primary-hover: #1565c0;
+      --secondary: #f4f4f5;
+      --item-hover: #f8faff;
+    }
+
+    [data-theme="dark"] {
+      --bg: #09090b;
+      --card: #18181b;
+      --border: #27272a;
+      --foreground: #fafafa;
+      --muted: #a1a1aa;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --secondary: #27272a;
+      --item-hover: #1e1e2e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background 0.3s;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 8px rgba(0, 0, 0, 0.08);
+      max-width: 440px;
+      width: 100%;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+      overflow: hidden;
+    }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-header {
+      padding: 32px 32px 20px;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--primary);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .brand span {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--primary);
+    }
+
+    .theme-toggle {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .theme-toggle:hover {
+      background: var(--secondary);
+    }
+
+    .theme-toggle svg {
+      width: 16px;
+      height: 16px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card-header h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      color: var(--foreground);
+      margin-bottom: 4px;
+    }
+
+    .card-header p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .search-wrap {
+      padding: 0 32px 16px;
+    }
+
+    .search-wrap input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--secondary);
+      color: var(--foreground);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: 12px center;
+    }
+
+    .search-wrap input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+      background-color: var(--card);
+    }
+
+    .search-wrap input::placeholder {
+      color: var(--muted);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0 32px;
+    }
+
+    .idp-list {
+      max-height: 360px;
+      overflow-y: auto;
+    }
+
+    .idp-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .idp-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .idp-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .idp-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 32px;
+      cursor: pointer;
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .idp-item:last-child {
+      border-bottom: none;
+    }
+
+    .idp-item:hover {
+      background: var(--item-hover);
+    }
+
+    .idp-logo-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: white;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      padding: 4px;
+    }
+
+    .idp-logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .idp-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      background: var(--secondary);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      flex-shrink: 0;
+      text-transform: uppercase;
+    }
+
+    .idp-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--foreground);
+      flex: 1;
+    }
+
+    .idp-arrow {
+      width: 16px;
+      height: 16px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s, stroke 0.2s;
+    }
+
+    .idp-item:hover .idp-arrow {
+      transform: translateX(3px);
+      stroke: var(--primary);
+    }
+
+    .state {
+      padding: 40px 32px;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .state p {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .state.error p {
+      color: #ef4444;
+    }
+
+    .card-footer {
+      border-top: 1px solid var(--border);
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-footer p {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-footer p strong {
+      color: var(--foreground);
+      font-weight: 500;
+    }
+
+    .card-footer a {
+      font-size: 12px;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+
+    .icon-sun {
+      display: none;
+    }
+
+    .icon-moon {
+      display: block;
+    }
+
+    [data-theme="dark"] .icon-sun {
+      display: block;
+    }
+
+    [data-theme="dark"] .icon-moon {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-top">
+        <div class="brand">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span>SPID SDK</span>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Cambia tema">
+          <svg class="icon-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+      </div>
+      <h1>Scegli il tuo Identity Provider</h1>
+      <p>Seleziona con quale gestore vuoi accedere</p>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Cerca il tuo gestore..." oninput="filterIdps(this.value)">
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="idp-list" id="idpList">
+      <div class="state">
+        <div class="spinner"></div>
+        <p>Caricamento Identity Provider...</p>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <p>Powered by <strong>SPID Java SDK</strong></p>
+      <a href="/spid/metadata">Metadata SP →</a>
+    </div>
+  </div>
+
+  <script>
+    const saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const level = params.get('level') || 'LEVEL_2';
+    let allIdps = [];
+
+    // Mappa entityId → logo ufficiale AgID (raw GitHub)
+    const LOGOS = {
+      'https://loginspid.aruba.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-arubaid.svg',
+      'https://identity.infocert.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-infocertid.svg',
+      'https://idp.intesigroup.com':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-intesaid.svg',
+      'https://id.lepida.it/idp/shibboleth':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-lepidaid.svg',
+      'https://idp.namirialtsp.com/idp':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-namirialid.svg',
+      'https://posteid.poste.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-posteid.svg',
+      'https://spid.register.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-registerid.svg',
+      'https://identity.sieltecloud.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-sielteid.svg',
+      'https://spid.teamsystem.com/idp':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-teamsystemid.svg',
+      'https://login.id.tim.it/affwebservices/public/saml2sso':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-timid.svg',
+      'https://loginspid.infocamere.it':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-infocamereid.svg',
+      'https://id.eht.eu':
+        'https://raw.githubusercontent.com/italia/spid-graphics/master/idp-logos/spid-idp-ehtid.svg',
+    };
+
+    async function loadIdps() {
+      try {
+        const res = await fetch('/spid/idps');
+        if (!res.ok) throw new Error('Errore HTTP ' + res.status);
+        allIdps = await res.json();
+        renderIdps(allIdps);
+      } catch (e) {
+        document.getElementById('idpList').innerHTML =
+          '<div class="state error"><p>Impossibile caricare gli Identity Provider.<br>Riprova tra qualche momento.</p></div>';
+      }
+    }
+
+    function initials(name) {
+      return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+    }
+
+    function renderIdps(idps) {
+      const list = document.getElementById('idpList');
+      if (!idps.length) {
+        list.innerHTML = '<div class="state"><p>Nessun Identity Provider trovato.</p></div>';
+        return;
+      }
+      list.innerHTML = idps.map(idp => {
+        const logoUrl = LOGOS[idp.entityId];
+        const logoHtml = logoUrl
+          ? `<div class="idp-logo-wrap"><img src="${logoUrl}" alt="${idp.name}" onerror="this.parentElement.outerHTML='<div class=\\'idp-avatar\\'>${initials(idp.name)}</div>'"></div>`
+          : `<div class="idp-avatar">${initials(idp.name)}</div>`;
+
+        return `
+        <a class="idp-item" href="/spid/login-select?idpEntityId=${encodeURIComponent(idp.entityId)}&level=${level}">
+          ${logoHtml}
+          <span class="idp-name">${idp.name}</span>
+          <svg class="idp-arrow" viewBox="0 0 24 24">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </a>
+      `;
+      }).join('');
+    }
+
+    function filterIdps(q) {
+      renderIdps(allIdps.filter(idp =>
+        idp.name.toLowerCase().includes(q.toLowerCase())
+      ));
+    }
+
+    loadIdps();
+  </script>
+</body>
+
+</html>

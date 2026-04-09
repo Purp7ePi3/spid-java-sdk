@@ -1,0 +1,5 @@
+it/spid/validator/SamlResponseValidator$ValidationResult.class
+it/spid/validator/SamlResponseValidator.class
+it/spid/validator/InMemoryRequestIdStore.class
+it/spid/validator/RequestIdStore.class
+it/spid/validator/SamlResponseValidator$ValidationConfig.class

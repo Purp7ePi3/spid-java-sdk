@@ -1,12 +1,31 @@
 {
   "groups": [
     {
+      "name": "management.endpoint.spid",
+      "type": "it.spid.spring.actuator.SpidEndpoint",
+      "sourceType": "it.spid.spring.actuator.SpidEndpoint"
+    },
+    {
       "name": "spid",
       "type": "it.spid.spring.config.SpidProperties",
       "sourceType": "it.spid.spring.config.SpidProperties"
     }
   ],
   "properties": [
+    {
+      "name": "management.endpoint.spid.cache.time-to-live",
+      "type": "java.time.Duration",
+      "description": "Maximum time that a response can be cached.",
+      "sourceType": "it.spid.spring.actuator.SpidEndpoint",
+      "defaultValue": "0ms"
+    },
+    {
+      "name": "management.endpoint.spid.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Whether to enable the spid endpoint.",
+      "sourceType": "it.spid.spring.actuator.SpidEndpoint",
+      "defaultValue": true
+    },
     {
       "name": "spid.assertion-consumer-service-url",
       "type": "java.lang.String",

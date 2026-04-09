@@ -1,3 +1,8 @@
+/home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/config/SpidRedisAutoConfiguration.java
+/home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/controller/IdpController.java
 /home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/config/SpidProperties.java
+/home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/actuator/SpidEndpoint.java
 /home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/config/SpidAutoConfiguration.java
 /home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/controller/SpidController.java
+/home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/controller/SpidLoginController.java
+/home/simo/Desktop/spid-java-sdk/spid-spring/src/main/java/it/spid/spring/RedisRequestIdStore.java

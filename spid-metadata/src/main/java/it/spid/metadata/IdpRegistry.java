@@ -246,4 +246,8 @@ public class IdpRegistry {
     }
     return null;
   }
+
+  public Instant getCacheExpiry() {
+    return cacheExpiry;
+  }
 }

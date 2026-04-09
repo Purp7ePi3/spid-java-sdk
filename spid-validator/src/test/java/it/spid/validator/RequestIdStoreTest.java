@@ -14,7 +14,7 @@ public class RequestIdStoreTest {
 
   @BeforeEach
   void setup() {
-    store = new RequestIdStore();
+    store = new InMemoryRequestIdStore();
   }
 
   @Test
@@ -45,7 +45,7 @@ public class RequestIdStoreTest {
   @Test
   void on_expired() throws InterruptedException {
     // TTL 1 sec per test
-    RequestIdStore shortStore = new RequestIdStore(1);
+    RequestIdStore shortStore = new InMemoryRequestIdStore(1);
     shortStore.register("_req1");
     Thread.sleep(1100);
     assertThrows(SecurityException.class, () -> shortStore.consumeOrThrow("_req1"));

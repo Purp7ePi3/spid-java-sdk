@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: it.spid.core.AuthnRequestSignatureTest
+-------------------------------------------------------------------------------
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.041 s -- in it.spid.core.AuthnRequestSignatureTest

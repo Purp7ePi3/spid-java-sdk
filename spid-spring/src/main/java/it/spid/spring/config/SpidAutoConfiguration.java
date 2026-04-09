@@ -5,15 +5,20 @@ import it.spid.core.saml.SpidService;
 import it.spid.crypto.CertificateLoader;
 import it.spid.crypto.XmlSigner;
 import it.spid.metadata.IdpRegistry;
+import it.spid.validator.InMemoryRequestIdStore;
 import it.spid.validator.RequestIdStore;
 import it.spid.validator.SamlResponseValidator;
+
+import org.opensaml.saml.saml2.metadata.Endpoint;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.Resource;
+import it.spid.spring.actuator.SpidEndpoint;
 
 import java.io.InputStream;
 import java.security.PrivateKey;
@@ -66,9 +71,9 @@ public class SpidAutoConfiguration {
   }
 
   @Bean
-  @ConditionalOnMissingBean
+  @ConditionalOnMissingBean(RequestIdStore.class)
   public RequestIdStore requestIdStore() {
-    return new RequestIdStore();
+    return new InMemoryRequestIdStore();
   }
 
   @Bean
@@ -91,5 +96,12 @@ public class SpidAutoConfiguration {
 
       return new XmlSigner(privateKey, cert);
     }
+  }
+
+  @Bean
+  @ConditionalOnMissingBean
+  @ConditionalOnClass(Endpoint.class)
+  public SpidEndpoint spidEndpoint(IdpRegistry idpRegistry, RequestIdStore requestIdStore) {
+    return new SpidEndpoint(idpRegistry, requestIdStore);
   }
 }
